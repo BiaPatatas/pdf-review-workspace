@@ -6,7 +6,6 @@ export function normalizeForMatch(text: string): string {
     .replace(/[\u2018\u2019]/g, "'")
     .replace(/[\u201C\u201D]/g, '"')
     .replace(/[\u2013\u2014]/g, '-')
-    .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -33,13 +32,15 @@ export function matchSelectionToPassage(
     };
   }
 
-  // Explicitly exclude running headers and footers
-  const excludedSelection =
-    query.includes(normalizeForMatch('Platform Editor - Internal Draft')) ||
-    query.includes(normalizeForMatch('Internal draft - do not distribute')) ||
-    query.includes(normalizeForMatch('7 October 2026'));
-
-  if (excludedSelection) {
+  // Explicitly exclude running headers and footers (tolerant to partial selections)
+  const excludedHeaderFooterPatterns = [
+    /platform\s+editor\s*[-\u2013\u2014]\s*internal/i,
+    /editor\s*[-\u2013\u2014]\s*internal\s+draft/i,
+    /do\s+not\s+distribute/i,
+    /october\s+2026/i,
+    /7\s+october/i,
+  ];
+  if (excludedHeaderFooterPatterns.some((pattern) => pattern.test(query))) {
     return {
       passage: null,
       reason:

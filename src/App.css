@@ -297,3 +297,246 @@ body {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
 }
+
+.header-right {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.author-control {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+}
+
+.author-control input {
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #475569;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 0.85rem;
+  width: 170px;
+}
+
+.overlap-notice {
+  background: #eff6ff;
+  border: 1px solid #3b82f6;
+  color: #1e3a8a;
+  padding: 0.55rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  margin-bottom: 0.75rem;
+}
+
+.editor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.rich-editor-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.rich-editor-label-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.rich-editor-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.rich-editor-helper {
+  font-size: 0.75rem;
+  color: #475569;
+}
+
+.rich-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.35rem;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+}
+
+.toolbar-btn {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.toolbar-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.toolbar-btn.active {
+  background: #1d4ed8;
+  color: #ffffff;
+  border-color: #1e40af;
+}
+
+.toolbar-btn:focus-visible,
+.primary-btn:focus-visible,
+.action-btn:focus-visible,
+.author-control input:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 18px;
+  background: #cbd5e1;
+  margin: 0 0.2rem;
+}
+
+.tiptap-editor-surface {
+  min-height: 96px;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0 0 6px 6px;
+  background: #ffffff;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.tiptap-editor-surface.compact {
+  min-height: 60px;
+}
+
+.tiptap-editor-surface:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: -1px;
+}
+
+.tiptap-editor-surface p {
+  margin: 0 0 0.4rem;
+}
+
+.tiptap-editor-surface p:last-child {
+  margin-bottom: 0;
+}
+
+.editor-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.primary-btn {
+  padding: 0.5rem 0.95rem;
+  border-radius: 6px;
+  border: none;
+  background: #1d4ed8;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.primary-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.pill-info {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.pill-warn {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.save-confirmation {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #166534;
+  font-weight: 500;
+}
+
+.badge-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.change-meta {
+  display: flex;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: #475569;
+  margin-bottom: 0.45rem;
+}
+
+.diff-block {
+  margin: 0.35rem 0;
+}
+
+.rich-preview p {
+  margin: 0.15rem 0;
+}
+
+.deletion-label {
+  margin: 0.15rem 0;
+  color: #991b1b;
+}
+
+.change-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+}
+
+.action-btn {
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.action-accept:not(:disabled) {
+  border-color: #15803d;
+  color: #166534;
+}
+
+.action-reject:not(:disabled) {
+  border-color: #b91c1c;
+  color: #991b1b;
+}
+
+.action-remove {
+  margin-left: auto;
+  color: #64748b;
+}
