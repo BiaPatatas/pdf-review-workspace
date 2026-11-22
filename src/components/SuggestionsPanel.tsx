@@ -28,7 +28,7 @@ export function SuggestionsPanel({
   onRejectSuggestion,
   onNavigateToPassage,
 }: SuggestionsPanelProps) {
-  const [showAllDocument, setShowAllDocument] = useState(false);
+  const [showAllDocument, setShowAllDocument] = useState(true);
 
   const visibleSuggestions = useMemo(() => {
     const raw = showAllDocument
@@ -77,23 +77,31 @@ export function SuggestionsPanel({
   }, [selectedPassage, allChanges]);
 
   return (
-    <section className="card" aria-label="Writing assistant suggestions">
-      <div className="suggestions-header">
+    <section
+      className="editorial-suggestions-panel"
+      aria-label="Writing assistant suggestions"
+    >
+      <div className="editorial-hero">
         <div>
-          <h2>Writing Suggestions</h2>
-          <p className="hint-text">
-            Sample mock suggestions (local only &mdash; no document text leaves
-            this browser). Treated as untrusted input; nothing changes until you
-            accept.
-          </p>
+          
+          <h2 className="editorial-title">Sample AI Suggestions</h2>
         </div>
+        
+      </div>
+
+      
+      <div className="suggestions-subbar">
+        <strong className="suggestions-count-label">
+          {visibleSuggestions.length} suggestion
+          {visibleSuggestions.length === 1 ? '' : 's'} to review
+        </strong>
         <button
           type="button"
-          className="action-btn"
+          className="scope-toggle-btn"
           aria-pressed={showAllDocument}
           onClick={() => setShowAllDocument((v) => !v)}
         >
-          {showAllDocument ? 'Current passage only' : 'Show all samples'}
+          {showAllDocument ? 'Across the document' : 'Current passage only'}
         </button>
       </div>
 
@@ -104,70 +112,150 @@ export function SuggestionsPanel({
         </div>
       ) : visibleSuggestions.length === 0 ? (
         <p className="hint-text">
-          No pending sample suggestions for this passage. Toggle{' '}
-          <strong>Show all samples</strong> to inspect suggestions across the
-          document.
+          No pending sample suggestions{' '}
+          {showAllDocument ? 'in this document' : 'for this passage'}.
         </p>
       ) : (
         <ul className="suggestions-list">
           {visibleSuggestions.map((sug) => {
             const safeProposedHtml = sanitizeRichText(sug.proposedHtml);
             const safeRationale = sanitizePlainText(sug.rationale);
+            const categoryLabel =
+              sug.category.charAt(0).toUpperCase() + sug.category.slice(1);
 
             return (
-              <li key={sug.id} className="suggestion-item">
-                <div className="change-header">
+              <li key={sug.id} className="change-card suggestion-card-accent">
+                <div className="change-card-top">
                   <div className="badge-group">
-                    <span
-                      className={`category-badge cat-${sug.category}`}
-                    >
-                      {sug.category}
+                    <span className={`editorial-cat-pill cat-${sug.category}`}>
+                      <span className="cat-dot" aria-hidden="true" />
+                      {categoryLabel}
                     </span>
-                    <span className="pill">Sample / Mock</span>
                   </div>
+
                   <button
                     type="button"
-                    className="link-button"
+                    className="page-jump-btn"
                     onClick={() => onNavigateToPassage(sug.passageId)}
                   >
-                    Page {sug.page} &middot; {sug.section}
+                    <span>Page {sug.page}</span>
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      aria-hidden="true"
+                    >
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
                   </button>
                 </div>
 
-                <p className="suggestion-rationale">{safeRationale}</p>
+                <div className="change-section-label">{sug.section}</div>
 
-                <div className="diff-block">
-                  <strong>Suggested wording:</strong>
-                  <div
-                    className="rich-preview"
-                    dangerouslySetInnerHTML={{ __html: safeProposedHtml }}
-                  />
+                <div className="change-diff-grid">
+                  <div className="diff-col">
+                    <span className="diff-label diff-label-original">
+                      ORIGINAL
+                    </span>
+                    <p className="rich-preview diff-text-original">
+                      {sug.originalText}
+                    </p>
+                  </div>
+
+                  <div className="diff-col">
+                    <span className="diff-label diff-label-proposed">
+                      PROPOSED
+                    </span>
+                    <div
+                      className="rich-preview diff-text-proposed"
+                      dangerouslySetInnerHTML={{ __html: safeProposedHtml }}
+                    />
+                  </div>
                 </div>
 
+                <hr className="change-divider" />
+
+                <div className="change-comment-row">
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z" />
+                  </svg>
+                  <p className="rich-preview">{safeRationale}</p>
+                </div>
+
+                <hr className="change-divider" />
+
                 <div
-                  className="change-actions"
+                  className="change-card-actions"
                   role="group"
                   aria-label={`Actions for ${sug.category} suggestion`}
                 >
                   <button
                     type="button"
-                    className="action-btn action-accept"
+                    className="card-btn card-btn-accept"
                     onClick={() => onAcceptSuggestion(sug)}
                   >
-                    Accept as Change
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      aria-hidden="true"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Accept
                   </button>
+
                   <button
                     type="button"
-                    className="action-btn"
+                    className="card-btn card-btn-edit"
                     onClick={() => onEditSuggestion(sug)}
                   >
-                    Edit in Editor
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      aria-hidden="true"
+                    >
+                      <path d="M12 20h9" />
+                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                    </svg>
+                    Edit &amp; Accept
                   </button>
+
                   <button
                     type="button"
-                    className="action-btn action-reject"
+                    className="card-btn card-btn-reject suggestion-reject-right"
                     onClick={() => onRejectSuggestion(sug.id)}
                   >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      aria-hidden="true"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
                     Reject
                   </button>
                 </div>

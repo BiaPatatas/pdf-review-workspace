@@ -26,6 +26,12 @@ describe('matchSelectionToPassage', () => {
     expect(footer.reason).toMatch(/headers and footers/i);
   });
 
+  it('prefers exact table cell match ("Rejected") over earlier passages containing the word', () => {
+    const result = matchSelectionToPassage(SOURCE_DOCUMENT_INDEX, 3, 'Rejected');
+    expect(result.passage?.text).toBe('Rejected');
+    expect(result.passage?.blockType).toBe('table_cell');
+  });
+
   it('does not let short table cells capture longer unrelated selections on page 3', () => {
     const result = matchSelectionToPassage(
       SOURCE_DOCUMENT_INDEX,
@@ -35,3 +41,4 @@ describe('matchSelectionToPassage', () => {
     expect(result.passage?.id).toBe('p3-table-r1-c1');
   });
 });
+

@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -44,28 +44,32 @@ describe('PDF Review Workspace — UI Integration', () => {
     await user.click(purposeBtn);
     expect(purposeBtn.getAttribute('aria-pressed')).toBe('true');
 
-    // Accept the mock grammar suggestion
+    // Switch to the Suggestions tab and filter to current passage
+    await user.click(screen.getByRole('tab', { name: /Suggestions/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Across the document/i })
+    );
+
     const suggestionsRegion = screen.getByRole('region', {
       name: /Writing assistant suggestions/i,
     });
     const acceptBtn = within(suggestionsRegion).getByRole('button', {
-      name: /Accept as Change/i,
+      name: /^Accept$/i,
     });
     await user.click(acceptBtn);
 
-    // Verify tracked change appears and is persisted in localStorage
+    // Suggestion should no longer appear as pending for this passage
+    expect(
+      within(suggestionsRegion).queryByRole('button', { name: /^Accept$/i })
+    ).toBeNull();
+
+    // Switch back to Changes tab and verify persistence
+    await user.click(screen.getByRole('tab', { name: /Changes/i }));
     expect(
       screen.getByRole('heading', { name: /Tracked Changes \(1\)/i })
-    ).toBeTruthy();
+    ).toBeInTheDocument();
     expect(changeRepository.getAll()).toHaveLength(1);
     expect(changeRepository.getAll()[0].status).toBe('Accepted');
-
-    // Suggestion should no longer appear as pending
-    expect(
-      within(suggestionsRegion).queryByRole('button', {
-        name: /Accept as Change/i,
-      })
-    ).toBeNull();
   });
 
   it('blocks editing and suggestions on protected legal text (Page 3)', async () => {
@@ -73,7 +77,7 @@ describe('PDF Review Workspace — UI Integration', () => {
     render(<App />);
 
     // Navigate to Page 3
-    const nextBtn = screen.getByRole('button', { name: /^Next$/i });
+    const nextBtn = screen.getByRole('button', { name: /Next/i });
     await user.click(nextBtn); // Page 2
     await user.click(nextBtn); // Page 3
 
@@ -83,17 +87,23 @@ describe('PDF Review Workspace — UI Integration', () => {
     });
     await user.click(lockedBtn);
 
-    // Editor save button should not be rendered; locked alerts must appear
+    // Editor save button should not be rendered; locked alert must appear
     expect(
       screen.queryByRole('button', { name: /Save Tracked Change/i })
-    ).toBeNull();
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(/Protected legal text/i);
 
-    const alerts = screen.getAllByRole('alert');
+    // Switch to Suggestions tab and filter to current passage
+    await user.click(screen.getByRole('tab', { name: /Suggestions/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Across the document/i })
+    );
+
+    const suggestionAlerts = screen.getAllByRole('alert');
     expect(
-      alerts.some((el) => /Protected legal text/i.test(el.textContent ?? ''))
-    ).toBe(true);
-    expect(
-      alerts.some((el) => /Suggestions disabled/i.test(el.textContent ?? ''))
+      suggestionAlerts.some((el) =>
+        /Suggestions disabled/i.test(el.textContent ?? '')
+      )
     ).toBe(true);
   });
 
@@ -102,7 +112,7 @@ describe('PDF Review Workspace — UI Integration', () => {
     render(<App />);
 
     // Navigate to Page 2
-    await user.click(screen.getByRole('button', { name: /^Next$/i }));
+    await user.click(screen.getByRole('button', { name: /Next/i }));
 
     // Select the passage containing the prompt injection note
     const injectionPassageBtn = screen.getByRole('button', {
@@ -110,13 +120,14 @@ describe('PDF Review Workspace — UI Integration', () => {
     });
     await user.click(injectionPassageBtn);
 
-    // Open the Context Inspector
+    // Switch to Suggestions tab and open the Context Inspector
+    await user.click(screen.getByRole('tab', { name: /Suggestions/i }));
     const summary = screen.getByText(/LLM Context Payload Inspector/i);
     await user.click(summary);
 
     expect(
       screen.getByText(/Prompt injection detected in context/i)
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 
   it('shows exclusion notice when selecting a running header', async () => {
@@ -129,6 +140,6 @@ describe('PDF Review Workspace — UI Integration', () => {
 
     expect(
       screen.getByText(/Running headers and footers are excluded/i)
-    ).toBeTruthy();
+    ).toBeInTheDocument();
   });
 });

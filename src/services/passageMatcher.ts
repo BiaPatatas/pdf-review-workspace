@@ -50,6 +50,16 @@ export function matchSelectionToPassage(
 
   const pagePassages = index.passages.filter((p) => p.page === page);
 
+  // 0. Exact full-passage match first (case-sensitive so "Rejected" matches the Status cell,
+  // while lowercase "rejected" inside a sentence falls through to substring matching)
+  const trimmedRaw = rawSelection.trim().replace(/\s+/g, ' ');
+  const exactMatch = pagePassages.find(
+    (p) => p.text.trim().replace(/\s+/g, ' ') === trimmedRaw
+  );
+  if (exactMatch) {
+    return { passage: exactMatch };
+  }
+
   // 1. Exact substring match (most common case when selecting a word/phrase/sentence)
   const substringMatch = pagePassages.find((p) =>
     normalizeForMatch(p.text).includes(query)

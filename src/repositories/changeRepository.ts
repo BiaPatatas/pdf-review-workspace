@@ -11,6 +11,7 @@ export const SESSION_AUTHOR_STORAGE_KEY = 'pdf_review_workspace_author_v1';
 export interface ChangeRepository {
   getAll(): TrackedChange[];
   save(change: TrackedChange): TrackedChange[];
+  update(change: TrackedChange): TrackedChange[];
   updateStatus(changeId: string, status: ChangeStatus): TrackedChange[];
   remove(changeId: string): TrackedChange[];
   clear(): void;
@@ -43,6 +44,14 @@ export class LocalStorageChangeRepository implements ChangeRepository {
     const validChange = TrackedChangeSchema.parse(change);
     const current = this.getAll();
     const updated = [validChange, ...current];
+    this.persist(updated);
+    return updated;
+  }
+  update(change: TrackedChange): TrackedChange[] {
+    const validChange = TrackedChangeSchema.parse(change);
+    const updated = this.getAll().map((item) =>
+      item.id === validChange.id ? validChange : item
+    );
     this.persist(updated);
     return updated;
   }
