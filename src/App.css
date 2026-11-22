@@ -632,3 +632,22 @@ body {
   font-size: 0.75rem;
   line-height: 1.4;
 }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: #1d4ed8;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0 0 6px 0;
+}
+
+.skip-link:focus {
+  left: 0;
+  outline: 2px solid #ffffff;
+  outline-offset: -3px;
+}

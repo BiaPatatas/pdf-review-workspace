@@ -260,6 +260,9 @@ function handleRejectSuggestion(suggestionId: string) {
 
   return (
     <div className="workspace-layout">
+      <a href="#review-panel" className="skip-link">
+        Skip to review panel
+      </a>
       <header className="workspace-header">
         <div>
           <h1>PDF Review Workspace</h1>
@@ -318,7 +321,7 @@ function handleRejectSuggestion(suggestionId: string) {
           />
         </section>
 
-        <aside className="side-pane" aria-label="Review panel">
+        <aside id="review-panel" className="side-pane" aria-label="Review panel">
           <section className="card">
             <h2>Selected Passage &amp; Proposal Editor</h2>
             {selectedPassage ? (

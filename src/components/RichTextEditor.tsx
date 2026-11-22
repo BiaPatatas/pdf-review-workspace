@@ -1,7 +1,6 @@
 import { useId } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
 import { sanitizeRichText } from '../security/sanitize';
 
 interface RichTextEditorProps {
@@ -33,7 +32,6 @@ export function RichTextEditor({
         horizontalRule: false,
         code: false,
       }),
-      Underline,
     ],
     content: initialHtml,
     editable: !disabled,
