@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { SOURCE_DOCUMENT_INDEX } from './data/documentIndex';
 import { canEditPassage, evaluateChangeContent } from './domain/changeRules';
-import type { ChangeStatus, IndexedPassage, TrackedChange } from './domain/schemas';
+import type { ChangeStatus, IndexedPassage, TrackedChange, Suggestion } from './domain/schemas';
 import {
   changeRepository,
   loadSessionAuthor,
@@ -17,6 +17,8 @@ import { matchSelectionToPassage } from './services/passageMatcher';
 import { PdfViewer } from './components/PDFViewer';
 import { RichTextEditor } from './components/RichTextEditor';
 import './App.css';
+import { SuggestionsPanel } from './components/SuggestionsPanel';
+
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -82,6 +84,9 @@ export function App() {
   const [draftCommentHtml, setDraftCommentHtml] = useState<string>('');
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
+  const [rejectedSuggestionIds, setRejectedSuggestionIds] = useState<string[]>([]);
+  const [activeSuggestionId, setActiveSuggestionId] = useState<string | undefined>(undefined);
+
   const pagePassages = useMemo(
     () => SOURCE_DOCUMENT_INDEX.passages.filter((p) => p.page === currentPage),
     [currentPage]
@@ -94,6 +99,7 @@ export function App() {
     setLastSelectedText(excerpt);
     setDraftProposedHtml(toCanonicalRichText(passage.text));
     setDraftCommentHtml('');
+    setActiveSuggestionId(undefined);
     setSaveMessage(null);
     setEditorResetKey((k) => k + 1);
   }
@@ -134,6 +140,8 @@ export function App() {
     const cleanCommentText = htmlToPlainText(cleanCommentHtml);
     const cleanAuthor = sanitizePlainText(sessionAuthor) || 'Reviewer Session';
 
+    
+
     const newChange: TrackedChange = {
       id:
         typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -154,11 +162,13 @@ export function App() {
       ...(cleanCommentText
         ? { comment: cleanCommentText, commentHtml: cleanCommentHtml }
         : {}),
-      source: 'manual',
+      source: activeSuggestionId ? 'suggestion' : 'manual',
+      ...(activeSuggestionId ? { suggestionId: activeSuggestionId } : {}),
     };
 
     const updated = changeRepository.save(newChange);
     setChanges(updated);
+    setActiveSuggestionId(undefined);
     setDraftProposedHtml(toCanonicalRichText(selectedPassage.text));
     setDraftCommentHtml('');
     setEditorResetKey((k) => k + 1);
@@ -178,6 +188,75 @@ export function App() {
     const updated = changeRepository.remove(changeId);
     setChanges(updated);
   }
+
+  function handleAcceptSuggestion(suggestion: Suggestion) {
+  const targetPassage = SOURCE_DOCUMENT_INDEX.passages.find(
+    (p) => p.id === suggestion.passageId
+  );
+  if (!targetPassage || !canEditPassage(targetPassage).allowed) return;
+
+  const evalResult = evaluateChangeContent(
+    targetPassage.text,
+    suggestion.proposedHtml
+  );
+  if (!evalResult.hasChanged) return;
+
+  const now = new Date().toISOString();
+  const cleanAuthor = sanitizePlainText(sessionAuthor) || 'Reviewer Session';
+  const cleanRationale = sanitizePlainText(suggestion.rationale);
+
+  const acceptedChange: TrackedChange = {
+    id:
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `chg-${Date.now()}`,
+    passageId: targetPassage.id,
+    page: targetPassage.page,
+    section: targetPassage.section,
+    originalText: evalResult.originalText,
+    proposedText: evalResult.proposedText,
+    originalHtml: evalResult.sanitizedOriginalHtml,
+    proposedHtml: evalResult.sanitizedProposedHtml,
+    formattingOnly: evalResult.formattingOnly,
+    status: 'Accepted',
+    author: cleanAuthor,
+    createdAt: now,
+    updatedAt: now,
+    comment: `[${suggestion.category} suggestion] ${cleanRationale}`,
+    source: 'suggestion',
+    suggestionId: suggestion.id,
+  };
+
+  const updated = changeRepository.save(acceptedChange);
+  setChanges(updated);
+  setRejectedSuggestionIds((prev) => [...prev, suggestion.id]);
+  setSaveMessage(`Accepted ${suggestion.category} suggestion and stored change.`);
+}
+
+function handleEditSuggestion(suggestion: Suggestion) {
+  const targetPassage = SOURCE_DOCUMENT_INDEX.passages.find(
+    (p) => p.id === suggestion.passageId
+  );
+  if (!targetPassage || !canEditPassage(targetPassage).allowed) return;
+
+  setSelectedPassage(targetPassage);
+  setCurrentPage(targetPassage.page);
+  setSelectionNotice(null);
+  setLastSelectedText('');
+  setDraftProposedHtml(sanitizeRichText(suggestion.proposedHtml));
+  setDraftCommentHtml(
+    toCanonicalRichText(`[${suggestion.category} suggestion] ${suggestion.rationale}`)
+  );
+  setActiveSuggestionId(suggestion.id);
+  setSaveMessage('Suggestion loaded into editor. Review and save when ready.');
+  setEditorResetKey((k) => k + 1);
+}
+
+function handleRejectSuggestion(suggestionId: string) {
+  setRejectedSuggestionIds((prev) =>
+    prev.includes(suggestionId) ? prev : [...prev, suggestionId]
+  );
+}
 
   return (
     <div className="workspace-layout">
@@ -322,12 +401,29 @@ export function App() {
                       </p>
                     )}
                   </div>
+                  
                 )}
+                
               </div>
             ) : (
               <p>Select text in the PDF or pick a passage below.</p>
             )}
           </section>
+
+          <SuggestionsPanel
+                  selectedPassage={selectedPassage}
+                  allChanges={changes}
+                  rejectedSuggestionIds={rejectedSuggestionIds}
+                  onAcceptSuggestion={handleAcceptSuggestion}
+                  onEditSuggestion={handleEditSuggestion}
+                  onRejectSuggestion={handleRejectSuggestion}
+                  onNavigateToPassage={(passageId) => {
+                    const target = SOURCE_DOCUMENT_INDEX.passages.find(
+                      (p) => p.id === passageId
+                    );
+                    if (target) selectPassageForReview(target);
+                  }}
+                />
 
           <section className="card">
             <h2>Tracked Changes ({changes.length})</h2>
@@ -405,15 +501,19 @@ export function App() {
                       )}
                     </div>
 
-                    {chg.commentHtml && (
+                    {(chg.commentHtml || chg.comment) && (
                       <div className="change-comment">
                         <strong>Comment:</strong>
-                        <div
-                          className="rich-preview"
-                          dangerouslySetInnerHTML={{
-                            __html: sanitizeRichText(chg.commentHtml),
-                          }}
-                        />
+                        {chg.commentHtml ? (
+                          <div
+                            className="rich-preview"
+                            dangerouslySetInnerHTML={{
+                              __html: sanitizeRichText(chg.commentHtml),
+                            }}
+                          />
+                        ) : (
+                          <p className="rich-preview">{chg.comment}</p>
+                        )}
                       </div>
                     )}
 
