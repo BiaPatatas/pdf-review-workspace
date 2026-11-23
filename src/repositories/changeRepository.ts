@@ -28,13 +28,17 @@ export class LocalStorageChangeRepository implements ChangeRepository {
     try {
       const raw = window.localStorage.getItem(this.storageKey);
       if (!raw) return [];
+      const parsed: unknown = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
 
-      const parsedJson: unknown = JSON.parse(raw);
-      const validated = TrackedChangeListSchema.safeParse(parsedJson);
-      if (!validated.success) {
-        return [];
+      const validChanges: TrackedChange[] = [];
+      for (const item of parsed) {
+        const result = TrackedChangeSchema.safeParse(item);
+        if (result.success) {
+          validChanges.push(result.data);
+        }
       }
-      return validated.data;
+      return validChanges;
     } catch {
       return [];
     }

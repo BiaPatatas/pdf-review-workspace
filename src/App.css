@@ -1188,3 +1188,10 @@ body {
 .suggestion-card-accent {
   border-left: 3px solid #0f766e;
 }
+
+.pill-overlap {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fdba74;
+  font-weight: 600;
+}

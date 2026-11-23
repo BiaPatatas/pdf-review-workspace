@@ -4,6 +4,8 @@ import {
   type IndexedPassage,
 } from '../domain/schemas';
 
+// Organizational note: "Introduction" groups the title and opening overview,
+// and section headings are not indexed as editable passages.
 const RAW_PASSAGES: Omit<
   IndexedPassage,
   'prevPassageId' | 'nextPassageId'
@@ -75,7 +77,7 @@ const RAW_PASSAGES: Omit<
   {
     id: 'p2-names-callout',
     page: 2,
-    section: 'Names used in this draft',
+    section: 'What the User Sees',
     blockType: 'paragraph',
     text: 'A suggestion is advice. It is not a change until a person accepts it.',
     editable: true,
@@ -128,6 +130,8 @@ const RAW_PASSAGES: Omit<
     text: 'Pending',
     editable: true,
     tableMeta: { tableId: 'review-states-table', row: 1, column: 0, columnHeader: 'Status' },
+    tableRow: 1,
+    tableColumn: 1,
   },
   {
     id: 'p3-table-r1-c1',
@@ -136,7 +140,9 @@ const RAW_PASSAGES: Omit<
     blockType: 'table_cell',
     text: 'The change is visible, and nobody has accepted or rejected it yet.',
     editable: true,
-    tableMeta: { tableId: 'review-states-table', row: 1, column: 1, columnHeader: 'Meaning' },
+    tableMeta: { tableId: 'review-states-table', row: 1, column: 2, columnHeader: 'Meaning' },
+    tableRow: 1,
+    tableColumn: 2,
   },
   {
     id: 'p3-table-r2-c0',
@@ -146,6 +152,8 @@ const RAW_PASSAGES: Omit<
     text: 'Acepted',
     editable: true,
     tableMeta: { tableId: 'review-states-table', row: 2, column: 0, columnHeader: 'Status' },
+    tableRow: 2,
+    tableColumn: 1,
   },
   {
     id: 'p3-table-r2-c1',
@@ -155,6 +163,8 @@ const RAW_PASSAGES: Omit<
     text: 'A reviewer accepted the change and the workspace kept it.',
     editable: true,
     tableMeta: { tableId: 'review-states-table', row: 2, column: 1, columnHeader: 'Meaning' },
+    tableRow: 2,
+    tableColumn: 2,
   },
   {
     id: 'p3-table-r3-c0',
@@ -164,6 +174,8 @@ const RAW_PASSAGES: Omit<
     text: 'Rejected',
     editable: true,
     tableMeta: { tableId: 'review-states-table', row: 3, column: 0, columnHeader: 'Status' },
+    tableRow: 3,
+    tableColumn: 1,
   },
   {
     id: 'p3-table-r3-c1',
@@ -173,6 +185,8 @@ const RAW_PASSAGES: Omit<
     text: 'A reviewer rejected the change and the original wording still stands.',
     editable: true,
     tableMeta: { tableId: 'review-states-table', row: 3, column: 1, columnHeader: 'Meaning' },
+    tableRow: 3,
+    tableColumn: 2,
   },
   {
     id: 'p3-expect-1',

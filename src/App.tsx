@@ -155,6 +155,18 @@ export function App() {
   );
 }, [changes, selectedPassage, editingChangeId]);
 
+  const activeCountByPassage = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const c of changes) {
+      if (c.status !== 'Rejected') {
+        counts.set(c.passageId, (counts.get(c.passageId) ?? 0) + 1);
+      }
+    }
+    return counts;
+  }, [changes]);
+
+
+
   function handleSaveChange() {
   if (!selectedPassage || !editCheck?.allowed || !evaluation?.hasChanged) {
     return;
@@ -164,11 +176,14 @@ export function App() {
   const cleanCommentHtml = sanitizeRichText(draftCommentHtml);
   const cleanCommentText = htmlToPlainText(cleanCommentHtml);
   const cleanAuthor = sanitizePlainText(sessionAuthor) || 'Reviewer Session';
+  //const cleanSelectedExcerpt = sanitizePlainText(lastSelectedText).trim();
+  
 
   const existing = editingChangeId
     ? changes.find((c) => c.id === editingChangeId)
     : undefined;
-
+  const cleanSelectedExcerpt =
+    sanitizePlainText(lastSelectedText).trim() || existing?.selectedExcerpt;
   const changeRecord: TrackedChange = {
     id:
       existing?.id ??
@@ -194,6 +209,13 @@ export function App() {
     ...(existing?.suggestionId ?? activeSuggestionId
       ? { suggestionId: existing?.suggestionId ?? activeSuggestionId }
       : {}),
+      ...(selectedPassage.tableRow !== undefined
+      ? { tableRow: selectedPassage.tableRow }
+      : {}),
+    ...(selectedPassage.tableColumn !== undefined
+      ? { tableColumn: selectedPassage.tableColumn }
+      : {}),
+      ...(cleanSelectedExcerpt ? { selectedExcerpt: cleanSelectedExcerpt } : {}),
   };
 
   const updated = existing
@@ -288,6 +310,12 @@ export function App() {
       comment: `[${suggestion.category} suggestion] ${cleanRationale}`,
       source: 'suggestion',
       suggestionId: suggestion.id,
+      ...(targetPassage.tableRow !== undefined
+        ? { tableRow: targetPassage.tableRow }
+        : {}),
+      ...(targetPassage.tableColumn !== undefined
+        ? { tableColumn: targetPassage.tableColumn }
+        : {}),
     };
 
     const updated = changeRepository.save(acceptedChange);
@@ -467,6 +495,12 @@ export function App() {
                       <span className="pill">Page {selectedPassage.page}</span>
                       <span className="pill">{selectedPassage.section}</span>
                       <span className="pill">{selectedPassage.blockType}</span>
+                      {selectedPassage.tableRow !== undefined &&
+                        selectedPassage.tableColumn !== undefined && (
+                          <span className="pill">
+                            Row {selectedPassage.tableRow}, Col {selectedPassage.tableColumn}
+                          </span>
+                        )}
                     </div>
 
                     {lastSelectedText && (
@@ -583,6 +617,9 @@ export function App() {
                   <ul className="changes-list">
                     {changes.map((chg) => {
                       const initial = (chg.author.trim()[0] || 'R').toUpperCase();
+                      const isOverlapping =
+                        chg.status !== 'Rejected' &&
+                        (activeCountByPassage.get(chg.passageId) ?? 0) > 1;
                       return (
                         <li
                           key={chg.id}
@@ -636,6 +673,14 @@ export function App() {
                                 )}
                                 {chg.status}
                               </span>
+                              {isOverlapping && (
+                                <span
+                                  className="pill pill-overlap"
+                                  title="Multiple unresolved changes touch this passage"
+                                >
+                                  Overlapping edit
+                                </span>
+                              )}
                               {chg.formattingOnly && (
                                 <span className="pill pill-info">
                                   Formatting only
@@ -671,7 +716,18 @@ export function App() {
                             </button>
                           </div>
 
-                          <div className="change-section-label">{chg.section}</div>
+                          <div className="change-section-label">
+                          {chg.section}
+                          {chg.tableRow !== undefined && chg.tableColumn !== undefined
+                            ? ` · Table Row ${chg.tableRow}, Col ${chg.tableColumn}`
+                            : ''}
+                        </div>
+
+                        {chg.selectedExcerpt && (
+                          <p className="selection-excerpt">
+                            <strong>Excerpt:</strong> &ldquo;{chg.selectedExcerpt}&rdquo;
+                          </p>
+                        )}
 
                           <div className="change-diff-grid">
                             <div className="diff-col">

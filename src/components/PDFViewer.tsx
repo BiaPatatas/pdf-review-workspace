@@ -23,24 +23,35 @@ export function PdfViewer({
 }: PdfViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const textLayerRef = useRef<HTMLDivElement | null>(null);
-  const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
-  const [loading, setLoading] = useState(true);
+  const onNumPagesLoadedRef = useRef(onNumPagesLoaded);
+  useEffect(() => {
+    onNumPagesLoadedRef.current = onNumPagesLoaded;
+  }, [onNumPagesLoaded]);
+
+  const [docState, setDocState] = useState<{
+    url: string;
+    doc: PDFDocumentProxy | null;
+  }>({ url: '', doc: null });
+  const [renderedKey, setRenderedKey] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+
+  const activeDoc = docState.url === fileUrl ? docState.doc : null;
+  const currentRenderKey = `${pageNumber}-${scale}`;
+  const loading =
+    !error &&
+    (docState.url !== fileUrl || !activeDoc || renderedKey !== currentRenderKey);
 
   // Effect 1: Load PDF document once per fileUrl and clean up on unmount
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
-    setPdfDoc(null);
-
     const loadingTask = pdfjsLib.getDocument({ url: fileUrl });
 
     loadingTask.promise
       .then((doc) => {
         if (cancelled) return;
-        setPdfDoc(doc);
-        onNumPagesLoaded?.(doc.numPages);
+        setError(null);
+        setDocState({ url: fileUrl, doc });
+        onNumPagesLoadedRef.current?.(doc.numPages);
       })
       .catch((err) => {
         if (cancelled) return;
@@ -49,29 +60,25 @@ export function PdfViewer({
         if (!message.toLowerCase().includes('cancel')) {
           setError(message);
         }
-        setLoading(false);
       });
 
     return () => {
       cancelled = true;
       loadingTask.destroy();
     };
-  }, [fileUrl, onNumPagesLoaded]);
+  }, [fileUrl]);
 
   // Effect 2: Render only the active page when pdfDoc, pageNumber, or scale changes
   useEffect(() => {
-    if (!pdfDoc) return;
+    if (!activeDoc) return;
 
     let cancelled = false;
     let renderTask: pdfjsLib.RenderTask | null = null;
     let textLayerInstance: pdfjsLib.TextLayer | null = null;
 
     async function renderPage() {
-      setLoading(true);
-      setError(null);
-
       try {
-        const page = await pdfDoc!.getPage(pageNumber);
+        const page = await activeDoc!.getPage(pageNumber);
         if (cancelled) return;
 
         const viewport = page.getViewport({ scale });
@@ -104,7 +111,10 @@ export function PdfViewer({
         textLayerDiv.style.width = `${viewport.width}px`;
         textLayerDiv.style.height = `${viewport.height}px`;
         textLayerDiv.style.setProperty('--scale-factor', String(viewport.scale));
-        textLayerDiv.style.setProperty('--total-scale-factor', String(viewport.scale));
+        textLayerDiv.style.setProperty(
+          '--total-scale-factor',
+          String(viewport.scale)
+        );
 
         const textContent = await page.getTextContent();
         if (cancelled) return;
@@ -115,6 +125,10 @@ export function PdfViewer({
           viewport,
         });
         await textLayerInstance.render();
+        if (cancelled) return;
+
+        setError(null);
+        setRenderedKey(currentRenderKey);
       } catch (err) {
         if (!cancelled) {
           const message =
@@ -122,10 +136,6 @@ export function PdfViewer({
           if (!message.toLowerCase().includes('cancel')) {
             setError(message);
           }
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
         }
       }
     }
@@ -137,7 +147,7 @@ export function PdfViewer({
       renderTask?.cancel();
       textLayerInstance?.cancel();
     };
-  }, [pdfDoc, pageNumber, scale]);
+  }, [activeDoc, pageNumber, scale, currentRenderKey]);
 
   function handleMouseUp() {
     const selection = window.getSelection();
@@ -148,7 +158,11 @@ export function PdfViewer({
   }
 
   return (
-    <div className="pdf-viewer-shell" aria-label={`PDF Page ${pageNumber}`}>
+    <div
+      className="pdf-viewer-shell"
+      role="region"
+      aria-label={`PDF Page ${pageNumber}`}
+    >
       {loading && (
         <div className="pdf-status" role="status" aria-live="polite">
           Loading PDF page {pageNumber}...

@@ -26,11 +26,12 @@ export function RichTextEditor({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: { levels: [2, 3] },
+        heading: false,
         codeBlock: false,
         blockquote: false,
         horizontalRule: false,
         code: false,
+        link: false,
       }),
     ],
     content: initialHtml,
@@ -119,42 +120,7 @@ export function RichTextEditor({
           <s>S</s>
         </button>
 
-        {!compact && (
-          <>
-            <span className="toolbar-divider" aria-hidden="true" />
-            <button
-              type="button"
-              className={`toolbar-btn ${
-                editor.isActive('heading', { level: 2 }) ? 'active' : ''
-              }`}
-              aria-pressed={editor.isActive('heading', { level: 2 })}
-              aria-label="Heading 2 (Ctrl+Alt+2)"
-              title="Heading 2 (Ctrl+Alt+2)"
-              disabled={disabled}
-              onClick={() =>
-                editor.chain().focus().toggleHeading({ level: 2 }).run()
-              }
-            >
-              H2
-            </button>
-
-            <button
-              type="button"
-              className={`toolbar-btn ${
-                editor.isActive('heading', { level: 3 }) ? 'active' : ''
-              }`}
-              aria-pressed={editor.isActive('heading', { level: 3 })}
-              aria-label="Heading 3 (Ctrl+Alt+3)"
-              title="Heading 3 (Ctrl+Alt+3)"
-              disabled={disabled}
-              onClick={() =>
-                editor.chain().focus().toggleHeading({ level: 3 }).run()
-              }
-            >
-              H3
-            </button>
-          </>
-        )}
+        
 
         <span className="toolbar-divider" aria-hidden="true" />
 

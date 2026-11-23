@@ -34,6 +34,8 @@ export const IndexedPassageSchema = z.object({
   prevPassageId: z.string().nullable(),
   nextPassageId: z.string().nullable(),
   tableMeta: TableMetaSchema.optional(),
+  tableRow: z.number().int().positive().optional(),
+  tableColumn: z.number().int().positive().optional(),
 });
 export type IndexedPassage = z.infer<typeof IndexedPassageSchema>;
 
@@ -65,6 +67,9 @@ export const TrackedChangeSchema = z.object({
   commentHtml: z.string().optional(),
   source: z.enum(['manual', 'suggestion']),
   suggestionId: z.string().optional(),
+  tableRow: z.number().int().positive().optional(),
+  tableColumn: z.number().int().positive().optional(),
+  selectedExcerpt: z.string().optional(),
 });
 export type TrackedChange = z.infer<typeof TrackedChangeSchema>;
 
