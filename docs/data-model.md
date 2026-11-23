@@ -30,6 +30,9 @@ erDiagram
         string lockReason "optional"
         string prevPassageId FK "nullable"
         string nextPassageId FK "nullable"
+        object tableMeta "optional; 0-based row and column"
+        int tableRow "optional; 1-based UI row"
+        int tableColumn "optional; 1-based UI column"
     }
 
     TableMeta {
@@ -57,6 +60,9 @@ erDiagram
         string commentHtml "optional sanitized HTML"
         enum source "manual | suggestion"
         string suggestionId FK "optional"
+        int tableRow "optional; 1-based UI row"
+        int tableColumn "optional; 1-based UI column"
+        string selectedExcerpt "optional exact PDF selection"
     }
 
     Suggestion {

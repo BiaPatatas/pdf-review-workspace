@@ -8,6 +8,10 @@ The original PDF remains read-only. The application uses a side panel and the PD
 - **Repository:** https://github.com/BiaPatatas/pdf-review-workspace
 - **Source PDF:** `public/source-document.pdf`
 
+## Demo
+
+A short walkthrough is available in [Demo-PDFReview.mp4](./docs/Demo-PDFReview.mp4).
+
 ## Project brief
 
 The interviewer exercise requested a 12–18 hour prototype that must:
@@ -310,7 +314,9 @@ erDiagram
     }
 ```
 
-Full JSON examples and the ER description are available in:
+An indexed-document and stored-change JSON example is available in [docs/examples/indexed-document-and-change.json](./docs/examples/indexed-document-and-change.json).
+
+The ER description is available in:
 
 - `docs/data-model.md`
 - `docs/examples/`
@@ -558,7 +564,6 @@ Deployment steps:
 4. Push the repository to GitHub.
 5. Import or update the Vercel project.
 6. Confirm `public/source-document.pdf` is included.
-7. Verify the live PDF, worker, and screenshots in a browser.
 
 The demo does not require environment variables.
 
@@ -578,25 +583,13 @@ The demo does not require environment variables.
 12. Open the context inspector.
 13. Confirm protected passages and headers/footers are blocked or excluded.
 
-## Screenshots
-
-For a walkthrough, use six screenshots or a short recording:
-
-1. PDF and side panel.
-2. Selected passage and rich-text editor.
-3. Pending/accepted/rejected changes.
-4. Overlapping edit badge and notice.
-5. Mock suggestions and context inspector.
-6. Protected Page 3 passage.
-
-A screenshot guide is available in `docs/screenshots/`.
-
 ## Trade-offs
 
 - A curated PDF index provides correctness and explainability instead of fragile generic PDF parsing.
 - `localStorage` avoids backend complexity but supports only one browser and one session.
 - Native text selection is used instead of PDF-coordinate overlays.
 - Passage matching uses normalized text and tokens instead of character offsets.
+- When a reviewer selects a small excerpt inside a paragraph, the editor loads the full parent passage rather than only the selected words. This keeps edits anchored to a stable `passageId`, preserves surrounding grammar and formatting context, and matches the same passage unit used by the context assembler. The exact selection remains visible through `Selected excerpt` and is persisted in `selectedExcerpt`; the trade-off is that the diff card shows the full passage rather than only the changed words.
 - A ±1-passage context window avoids sending the full document.
 - Mock suggestions avoid external data transfer and credentials.
 - Zod and DOMPurify provide runtime boundaries appropriate for a frontend prototype.
@@ -618,6 +611,7 @@ A screenshot guide is available in `docs/screenshots/`.
 ## Future work
 
 - Add character offsets or text ranges for finer overlap detection.
+- Add word-level diff highlighting and sub-passage replacement support for small selections, while retaining parent-passage IDs and context.
 - Persist rejected suggestions and dismissed states.
 - Add schema migrations and versioning for browser storage.
 - Replace `localStorage` with REST API and PostgreSQL.
@@ -637,3 +631,5 @@ Detailed decisions, trade-offs, test notes, and known limitations are consolidat
 
 - `docs/decision_log_tradeoffs_limitations_tests.md`
 - `docs/data-model.md`
+
+
