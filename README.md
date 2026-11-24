@@ -8,9 +8,65 @@ The original PDF remains read-only. The application uses a side panel and the PD
 - **Repository:** https://github.com/BiaPatatas/pdf-review-workspace
 - **Source PDF:** `public/source-document.pdf`
 
+## Table of contents
+
+- [Demo](#demo)
+- [Screenshots](#screenshots)
+- [Project brief](#project-brief)
+- [Implemented features](#implemented-features)
+  - [PDF review](#pdf-review)
+  - [Tracked changes](#tracked-changes)
+  - [Dynamic editor](#dynamic-editor)
+  - [Overlapping edits](#overlapping-edits)
+  - [Table cells](#table-cells)
+  - [Suggestions](#suggestions)
+  - [Protected legal wording](#protected-legal-wording)
+  - [Prompt-injection protection](#prompt-injection-protection)
+- [Interviewer-confirmed decisions](#interviewer-confirmed-decisions)
+- [Architecture](#architecture)
+- [Data model](#data-model)
+- [Indexed document and retrieval](#indexed-document-and-retrieval)
+  - [Context assembly](#context-assembly)
+- [Persistence](#persistence)
+- [Security](#security)
+  - [HTTP security headers](#http-security-headers)
+- [Setup and local development](#setup-and-local-development)
+  - [Prerequisites](#prerequisites)
+  - [Clone and install](#clone-and-install)
+  - [Start development](#start-development)
+  - [Run tests](#run-tests)
+  - [Run lint](#run-lint)
+  - [Create a production build](#create-a-production-build)
+  - [Preview the production build](#preview-the-production-build)
+- [Test coverage](#test-coverage)
+- [Deployment](#deployment)
+- [Main user flow](#main-user-flow)
+- [Trade-offs](#trade-offs)
+- [Known limitations](#known-limitations)
+- [Future work](#future-work)
+- [Engineering document](#engineering-document)
+
 ## Demo
 
 A short walkthrough is available in [Demo-PDFReview.mp4](./docs/Demo-PDFReview.mp4).
+
+## Screenshots
+
+### Review workspace
+
+![PDF Review Workspace](./docs/screenshots/PDFReviewWorkspace.png)
+
+### Suggestions
+
+![Suggestions review](./docs/screenshots/Suggestions.png)
+
+### Tracked change
+
+![Tracked change](./docs/screenshots/TrackedChange.png)
+
+### Formatting-only change
+
+![Formatting-only change](./docs/screenshots/FormattingChange.png)
 
 ## Project brief
 
@@ -617,7 +673,6 @@ The demo does not require environment variables.
 - Replace `localStorage` with REST API and PostgreSQL.
 - Add immutable status history and multi-reviewer conflict resolution.
 - Add zoom controls and status highlights in the PDF text layer.
-- Add inline word-level diffs.
 - Add React lazy loading for PDF and rich-text components.
 - Add Playwright end-to-end tests.
 - Add automated accessibility checks.
